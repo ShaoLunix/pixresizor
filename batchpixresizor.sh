@@ -2,13 +2,12 @@
 
 #==============================================================================#
 # Versions
-# [2019-XX-XX] [1.0] [Stéphane-Hervé] First version
+# [2019-08-19] [1.0.0.1] [Stéphane-Hervé]
 #==============================================================================#
-VER=1.0
+VER=1.0.0.1
 
 # strict mode
 set -o nounset
-#set -x
 
 myscript="batchpixresizor"
 mycontact="https://github.com/ShaoLunix/pixresizor/issues"
@@ -70,7 +69,7 @@ prerequisitenotmet()
 # Aborting the script because of a wrong or missing parameter
 usage()
 {
-    echo "Usage: $myscript [-a] [-d DIRECTORY] [-e EXTENSION] [-h] [-i FILEINPUT] [-n NUMBER] [-o FILEOUTPUT]"
+    echo "Usage: $myscript [-a] [-d DIRECTORY] [-e EXTENSION] [-h] [-i INPUTFILE] [-n NUMBER] [-o OUTPUTFILE]"
     echo "[-q QUALITY] [-r RESOLUTION] [-s SIZE] [-v]"
     echo "For more information on how to use the script, type : < $myscript -h >"
     echo "$myscript -- End -- failed"
@@ -88,7 +87,7 @@ displayhelp()
     echo
     echo "SYNOPSIS"
     echo "      $myscript [-a] [[-e EXTENSION] [-n NUMBER]]"
-    echo "      $myscript [-q QUALITY] [-r RESOLUTION] [-s SIZE] [[-d DIRECTORY]|[-i FILEINPUT]] [-o FILEOUTPUT]"
+    echo "      $myscript [-q QUALITY] [-r RESOLUTION] [-s SIZE] [[-d DIRECTORY]|[-i INPUTFILE]] [-o OUTPUTFILE]"
     echo "      $myscript [-h]"
     echo "      $myscript [-v]"
     echo
@@ -106,8 +105,8 @@ displayhelp()
     echo "      -s :        size of the image after processing."
     echo "      -v :        this script version."
     echo
-    echo "Without the option [-a], then either the input directory [-d DIRECTORY] or the input file [-i FILEINPUT] is compulsory. " \
-    echo "The file output option [-o FILEOUTPUT] is obviously compulsory too."
+    echo "Without the option [-a], then either the input directory [-d DIRECTORY] or the input file [-i INPUTFILE] is compulsory. " \
+    echo "The file output option [-o OUTPUTFILE] is obviously compulsory too."
     echo "The input/output elements must be mentioned at the end of the line."
     echo
     echo "EXIT STATUS"
@@ -241,17 +240,24 @@ if [[ "$isinputdirectory" == true ]]
         for filename in "$inputdirectory"/*."$ext"
         do
             basename="$(basename "$filename" ."$ext")"
-            ./pixresizor.sh "$inputdirectory/$basename.$ext" $resolution $size $quality "$outputdirectory/$basename.$ext"
+            ./pixresizor.sh -i "$inputdirectory/$basename.$ext" -r $resolution -s $size -q $quality -o "$outputdirectory/$basename.$ext"
         done
 elif [[ "$isalloptionsincluded" == false ]]
     then
         if [[ "$isinputfile" == false ]] || [[ "$isoutputfile" == false ]]
             then usage
-            else ./pixresizor.sh "$inputfile" $resolution $size $quality "$outputfile"
+            else ./pixresizor.sh -i "$inputfile" -r $resolution -s $size -q $quality -o "$outputfile"
         fi
 else
-    # Process each file of the regarded extension
-    for file in "$sourcepath"/*."$ext"
+    # Definition of the source file as :
+    # - either all the files of an extension in the regarded directory
+    # - or the file given as argument of the command line
+    if [[ "$isinputfile" == false ]]
+        then sourcefile="$sourcepath"/*."$ext"
+        else sourcefile="$inputfile"
+    fi
+    # Process each file of the source
+    for file in "$sourcefile"
     do
         # Extracting the basename
         filename=${file##*/}
@@ -283,7 +289,7 @@ else
                             -resize "${!size}" \
                             -quality "${!quality}" \
                             $configuredoptions \
-                            "$sourcepath"/*".$ext" \
+                            "$sourcefile" \
                             "${!destpath}/$basename.$ext"
         done
     done
