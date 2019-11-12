@@ -2,9 +2,9 @@
 
 #==============================================================================#
 # Versions
-# [2019-08-19] [1.0.0.1] [Stéphane-Hervé]
+# [2019-08-19] [1.0.0.1] [Stéphane-Hervé] First version
 #==============================================================================#
-VER=1.0.0.1
+VER=1.0
 
 # strict mode
 set -o nounset
@@ -68,9 +68,7 @@ usage()
 displayhelp()
 {
     echo "Syntax : $myscript [OPTION ...]"
-    echo "WHAT THE SCRIPT DOES based on the values passed with the arguments -lnx."
-    echo
-    echo "With no option, the command returns ..."
+    echo "This script changes the quality, resolution or size of the picture passed in argument."
     echo
     echo "$myscript [-i INPUTFILE] [-n NUMBER] [-o OUTPUTFILE] [-q QUALITY] [-r RESOLUTION] [-s SIZE]"
     echo "$myscript [-h]"
